@@ -1,5 +1,3 @@
-# Mathis-Veillard-Montage
-Site de présentation de portfolio
 # assets/images
 
 Dossier des ressources visuelles du portfolio.
