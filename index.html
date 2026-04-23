@@ -76,16 +76,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --charbon:     #0B0A09;
-      --charbon2:    #141210;
-      --charbon3:    #1C1916;
-      --blanc-froid: #D4DCE8;
-      --bleu-acier:  #4A7FA5;
-      --bleu-froid:  #A8C4D8;
-      --blanc-chaud: #E8E2D8;
-      --gris-moyen:  #4A4540;
-      --gris-clair:  #6A6560;
-      --ligne:       #2A2520;
+      --charbon:     #2C2A27;
+      --charbon2:    #333128;
+      --charbon3:    #3C3930;
+      --blanc-froid: #DDE4EE;
+      --bleu-acier:  #5A8FB5;
+      --bleu-froid:  #B4CEDF;
+      --blanc-chaud: #EDE8DF;
+      --gris-moyen:  #9A9590;
+      --gris-clair:  #B5B0AA;
+      --ligne:       #4A4540;
       --rouge:       #C0392B;
     }
 
@@ -1792,7 +1792,7 @@
             2. Remplacer href="#" par href="assets/cv-mathis-veillard.pdf"
             3. Ajouter l'attribut : download="CV-Mathis-Veillard.pdf"
           -->
-          <a href="Assets/CV-2026_Mathis-Veillard_compressed.pdf"
+          <a href="assets/CV-2026_Mathis-Veillard_compressed.pdf"
              class="c-link"
              data-track="contact-cv">
             <span class="c-icon">↓</span>Télécharger le CV
@@ -1936,9 +1936,15 @@
         });
       }
 
-      /* Parallax sur la texture de fond et sur l'image réelle (si activée) */
-      if (heroBg) heroBg.style.transform = `translateY(${window.scrollY * .22}px)`;
-      if (heroImg) heroImg.style.transform = `translateY(${window.scrollY * .16}px)`;
+      /* Parallax sur la texture de fond et sur l'image réelle — désactivé sur mobile */
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) {
+        if (heroBg) heroBg.style.transform = `translateY(${window.scrollY * .22}px)`;
+        if (heroImg) heroImg.style.transform = `translateY(${window.scrollY * .16}px)`;
+      } else {
+        if (heroBg) heroBg.style.transform = "";
+        if (heroImg) heroImg.style.transform = "";
+      }
     }
 
     window.addEventListener('scroll', onHeroScroll, { passive: true });
