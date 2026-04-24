@@ -752,26 +752,163 @@
     .skill-image-ph { width: 100%; height: 120px; margin-top: 1.5rem; }
 
 
-    /* ── 9. TIMELINE ──────────────────────────────────────────── */
-    .timeline-section { background: var(--charbon2); }
-    .timeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 1rem; }
-    .timeline { position: relative; padding-left: 2.5rem; }
-    .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--ligne); }
-    .tl-item { position: relative; margin-bottom: 3rem; }
-    .tl-tick { position: absolute; left: -2.8rem; top: .25rem; width: 8px; height: 8px; border: 1px solid var(--bleu-acier); background: var(--charbon2); z-index: 1; }
-    .tl-year { font-family: 'Syne Mono', monospace; font-size: .58rem; color: var(--bleu-acier); letter-spacing: .1em; margin-bottom: .35rem; }
-    .tl-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--blanc-chaud); margin-bottom: .2rem; }
-    .tl-sub { font-family: 'Syne Mono', monospace; font-size: .58rem; color: var(--gris-clair); letter-spacing: .05em; text-transform: uppercase; margin-bottom: .5rem; }
-    .tl-desc { font-size: .82rem; color: var(--gris-moyen); line-height: 1.65; font-weight: 300; }
+    /* ── 9. TIMELINE HORIZONTALE ─────────────────────────────── */
+    .timeline-section { background: var(--charbon2); overflow: hidden; }
 
-    /*
-      IMAGE TIMELINE (miniature)
-      FICHIER  : assets/images/tl-[projet].jpg | 240×135px | < 80 Ko
-      ACTIVER  : Remplacer div.tl-img-ph par :
-                 <img class="tl-img" src="assets/images/tl-[projet].jpg" alt="[Titre]">
-    */
-    .tl-img-ph { width: 140px; height: 90px; margin-top: .8rem; }
-    .tl-img { width: 140px; height: 90px; object-fit: cover; margin-top: .8rem; border: 1px solid var(--ligne); display: block; }
+    /* Bande radio — rail horizontal */
+    .tl-tape-wrapper {
+      position: relative; margin-top: 3rem;
+    }
+
+    /* Dégradés de fondu sur les bords */
+    .tl-tape-wrapper::before,
+    .tl-tape-wrapper::after {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 10; pointer-events: none;
+    }
+    .tl-tape-wrapper::before { left: 0; background: linear-gradient(90deg, var(--charbon2) 0%, transparent 100%); }
+    .tl-tape-wrapper::after  { right: 0; background: linear-gradient(270deg, var(--charbon2) 0%, transparent 100%); }
+
+    /* Ligne de rail centrale */
+    .tl-rail-line {
+      position: absolute; top: 50%; left: 0; right: 0; height: 1px;
+      background: var(--ligne); transform: translateY(-50%); z-index: 0;
+    }
+
+    /* Scroll container */
+    .tl-scroll {
+      display: flex; gap: 0;
+      overflow-x: auto; overflow-y: hidden;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; cursor: grab;
+      padding: 2rem 120px;
+      align-items: stretch;
+    }
+    .tl-scroll::-webkit-scrollbar { display: none; }
+    .tl-scroll.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+
+    /* Séparateur de catégorie */
+    .tl-category-sep {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 120px; flex-shrink: 0; position: relative; gap: 0.6rem;
+    }
+    .tl-category-sep .tl-cat-label {
+      font-family: 'Syne Mono', monospace; font-size: .5rem; color: var(--bleu-acier);
+      letter-spacing: .2em; text-transform: uppercase; writing-mode: vertical-rl;
+      text-orientation: mixed; transform: rotate(180deg); opacity: .6;
+    }
+    .tl-category-sep .tl-cat-line {
+      width: 1px; flex: 1; background: var(--bleu-acier); opacity: .25; min-height: 60px;
+    }
+
+    /* Carte item */
+    .tl-card {
+      min-width: 280px; max-width: 280px; flex-shrink: 0;
+      background: var(--charbon3); border: 1px solid var(--ligne);
+      padding: 1.4rem 1.4rem 1.2rem;
+      position: relative; transition: border-color .3s, transform .3s;
+      display: flex; flex-direction: column; gap: .4rem;
+    }
+    .tl-card:hover { border-color: rgba(90,143,181,.4); transform: translateY(-3px); }
+
+    /* Connecteur vertical vers le rail */
+    .tl-card-connector {
+      position: absolute; left: 50%; width: 1px;
+      background: var(--ligne); z-index: 0;
+    }
+    .tl-card-connector.top    { bottom: 100%; height: 32px; transform: translateX(-50%); }
+    .tl-card-connector.bottom { top: 100%; height: 32px; transform: translateX(-50%); }
+
+    /* Point sur le rail */
+    .tl-card-dot {
+      position: absolute; left: 50%; width: 7px; height: 7px;
+      border: 1px solid var(--bleu-acier); background: var(--charbon2);
+      border-radius: 0; transform: translateX(-50%) rotate(45deg); z-index: 2;
+    }
+    .tl-card-dot.top    { bottom: calc(100% + 28px); }
+    .tl-card-dot.bottom { top: calc(100% + 28px); }
+
+    /* Layout alterné haut/bas */
+    .tl-row-top    { align-self: flex-start; margin-bottom: 32px; margin-top: 0; }
+    .tl-row-bottom { align-self: flex-end;   margin-top: 32px;    margin-bottom: 0; }
+
+    /* Contenu carte */
+    .tl-year  { font-family: 'Syne Mono', monospace; font-size: .55rem; color: var(--bleu-acier); letter-spacing: .12em; }
+    .tl-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--blanc-chaud); line-height: 1.25; margin-top: .1rem; }
+    .tl-sub   { font-family: 'Syne Mono', monospace; font-size: .52rem; color: var(--gris-clair); letter-spacing: .05em; text-transform: uppercase; }
+    .tl-desc  { font-size: .78rem; color: var(--gris-moyen); line-height: 1.6; font-weight: 300; margin-top: .3rem; }
+    .tl-img   { width: 100%; height: 80px; object-fit: cover; margin-top: .6rem; border: 1px solid var(--ligne); display: block; }
+
+    /* Accordion block */
+    .tl-block { border: 1px solid var(--ligne); margin-top: 2rem; }
+
+    .tl-block-header {
+      width: 100%; background: transparent; border: none; cursor: none;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.4rem; gap: 1.5rem;
+      border-bottom: 1px solid var(--ligne);
+      transition: background .2s;
+    }
+    .tl-block-header:hover { background: rgba(90,143,181,.04); }
+    .tl-block-header[aria-expanded="false"] { border-bottom-color: transparent; }
+
+    .tl-block-header-left { display: flex; align-items: baseline; gap: 1rem; }
+    .tl-block-label {
+      font-family: 'Syne Mono', monospace; font-size: .52rem;
+      color: var(--bleu-acier); letter-spacing: .15em; opacity: .6;
+    }
+    .tl-block-title {
+      font-family: 'Syne Mono', monospace; font-size: .72rem;
+      color: var(--blanc-froid); letter-spacing: .1em; text-transform: uppercase;
+    }
+    .tl-block-count {
+      font-family: 'Syne Mono', monospace; font-size: .5rem;
+      color: var(--gris-moyen); letter-spacing: .08em;
+    }
+    .tl-block-toggle {
+      font-family: 'Syne Mono', monospace; font-size: .6rem;
+      color: var(--bleu-acier); transition: transform .3s;
+    }
+
+    /* Corps accordion */
+    .tl-block-body {
+      overflow: hidden;
+      max-height: 600px;
+      transition: max-height .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;
+      opacity: 1;
+    }
+    .tl-block-body.is-closed {
+      max-height: 0;
+      opacity: 0;
+    }
+
+    /* Flèches navigation */
+    .tl-nav {
+      display: flex; justify-content: flex-end; gap: .6rem;
+      padding: .8rem 1.4rem;
+    }
+    .tl-nav-btn {
+      font-family: 'Syne Mono', monospace; font-size: .7rem;
+      width: 34px; height: 34px; border: 1px solid var(--ligne);
+      background: transparent; color: var(--bleu-froid);
+      cursor: none; display: flex; align-items: center; justify-content: center;
+      transition: border-color .2s, background .2s;
+    }
+    .tl-nav-btn:hover { border-color: var(--bleu-acier); background: rgba(90,143,181,.08); }
+
+    /* Indicateur de scroll */
+    .tl-scroll-hint {
+      font-family: 'Syne Mono', monospace; font-size: .5rem; color: var(--gris-moyen);
+      letter-spacing: .12em; text-transform: uppercase; text-align: center;
+      padding-bottom: 1rem; opacity: .4;
+    }
+
+    /* Responsive mobile */
+    @media (max-width: 768px) {
+      .tl-card { min-width: 240px; max-width: 240px; }
+      .tl-tape-wrapper::before, .tl-tape-wrapper::after { width: 40px; }
+      .tl-scroll { padding: 2rem 60px; }
+    }
 
 
     /* ── 10. À PROPOS ─────────────────────────────────────────── */
@@ -1531,159 +1668,182 @@
         <div class="s-label">Parcours</div>
         <h2 class="s-title">Timeline <em>professionnelle</em></h2>
       </div>
-      <div class="timeline-grid">
 
-        <!-- Expériences -->
-        <div>
-          <div class="s-label reveal" style="margin-bottom:2rem;">Expériences</div>
-          <div class="timeline reveal">
-
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2025</div>
-              <h3 class="tl-title">Éclaireurs — Séisme & TV5Monde+</h3>
-              <div class="tl-sub">Monteur image · Long métrage documentaire</div>
-              <!--
-                IMAGE TIMELINE : assets/images/tl-eclaireurs.jpg | 240×135px | < 80 Ko
-                ACTIVER : remplacer div.tl-img-ph par :
-                          <img class="tl-img" src="assets/images/tl-eclaireurs.jpg" alt="Éclaireurs">
-              -->
-              <img
-                class="tl-img"
-                src="assets/images/Eclaireurs2.JPG"
-                alt="Éclaireurs">
-              <div class="tl-desc">Prix du jury et prix Albert Schweitzer 2026 — Festival du Film Vert de Genève. Réal. Arthur Gosset &amp; Hélène Cloître.</div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2025</div>
-              <h3 class="tl-title">Le plus beau tableau du monde - Fenêtre sur Courts</h3>
-              <div class="tl-sub">Monteur image · Court métrage de fiction</div>
-              <img
-                class="tl-img"
-                src="assets/images/pbtm4.JPG"
-                alt="Ligue 1 Mag">
-
-                 <div class="tl-desc">Primé au Hallucinea Film Festival</div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2025</div>
-              <h3 class="tl-title">Ligue 1 Mag — May21 & Black Dynamite Production</h3>
-              <div class="tl-sub">Assistant post-production · Broadcast</div>
-  
-              <div class="tl-desc">Ingest, conforming, QC, exports PAD broadcast. Diffusion nationale.</div>
-            </div>
-            
-                <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2025</div>
-              <h3 class="tl-title">Testeni Albert Taque - Cinémathèque de Bretagne</h3>
-              <div class="tl-sub">Témoignage documentaire · Réalisation & montage</div>
-
-              <div class="tl-desc">Témoignage sur la libération de Rosporden en Août 1944 par les alliés. Réal. Mathis Veillard & Léo-Pol Sellin.</div>
-            </div>
-
-
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2024</div>
-              <h3 class="tl-title">Une dernière nuit de toi</h3>
-              <div class="tl-sub">VFX Artist 2D · Long Métrage de fiction · Prime Video</div>
-              <img
-                class="tl-img"
-                src="assets/images/derniere-nuit-cover.jpg"
-                alt="Une dernière nuit de toi">
-              <div class="tl-desc">Compositing, rotoscopie, intégrations. Réal. Théodore Tomasz.</div>
-            </div>
-
-                <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2024</div>
-              <h3 class="tl-title">Ultimatum 3 - Guérilla</h3>
-              <div class="tl-sub">VFX 2D · Moyen métrage d'action</div>
-              <img
-                class="tl-img"
-                src="assets/images/Ultimatum1.JPG"
-                alt="Ultimatum3">
-              <div class="tl-desc">Compositing, rotoscopie, intégrations, création d'assets, motion design. Réal. Axel Plantec & David A. Simon.</div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2022</div>
-              <h3 class="tl-title">Home Glitch Home — Ecce Films</h3>
-              <div class="tl-sub">VFX Artist 2D · 7 mois · Paris</div>
-              <img
-              class="tl-img"
-              src="assets/images/hgh1.JPG"
-              alt="Home Glitch Home">
-              <div class="tl-desc">Processus expérimental, compositing, IA. Réal. Carlos Franklin.</div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2018–19</div>
-              <h3 class="tl-title">Mallard Productions — Glasgow</h3>
-              <div class="tl-sub">Monteur · 6 mois</div>
-              <div class="tl-desc">Expérience fondatrice en post-production internationale.</div>
-            </div>
-
+      <!-- ── BANDE EXPÉRIENCES ───────────────────────────────────── -->
+      <div class="tl-block reveal">
+        <button class="tl-block-header" aria-expanded="true" aria-controls="tl-exp-body" id="tl-exp-trigger">
+          <div class="tl-block-header-left">
+            <span class="tl-block-label">01</span>
+            <span class="tl-block-title">Expériences</span>
+            <span class="tl-block-count">8 entrées</span>
           </div>
-        </div>
+          <span class="tl-block-toggle" aria-hidden="true">▲</span>
+        </button>
 
-        <!-- Formation -->
-        <div>
-          <div class="s-label reveal" style="margin-bottom:2rem;">Formation</div>
-          <div class="timeline reveal reveal-d2">
+        <div class="tl-block-body" id="tl-exp-body" role="region" aria-labelledby="tl-exp-trigger">
+          <div class="tl-tape-wrapper">
+            <div class="tl-rail-line" aria-hidden="true"></div>
+            <div class="tl-scroll" data-tl="exp" role="list">
 
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2020–2022</div>
-              <h3 class="tl-title">Master NUMIC</h3>
-              <div class="tl-sub">Université Rennes 2 · Mention Bien</div>
-              <div class="tl-desc">Numérique et Médias Interactifs pour le Cinéma. Projet de Master : 18/20 — 2e meilleure note de l'histoire du programme pour Celui Qui Ne Trahira Pas.</div>
-            </div>
+              <div class="tl-card tl-row-top" role="listitem">
+                <div class="tl-card-connector bottom" aria-hidden="true"></div>
+                <div class="tl-card-dot bottom" aria-hidden="true"></div>
+                <div class="tl-year">2025</div>
+                <h3 class="tl-title">Éclaireurs — Séisme &amp; TV5Monde+</h3>
+                <div class="tl-sub">Monteur image · Long métrage documentaire</div>
+                <img class="tl-img" src="assets/images/Eclaireurs2.JPG" alt="Éclaireurs">
+                <div class="tl-desc">Prix du jury et prix Albert Schweitzer 2026 — Festival du Film Vert de Genève. Réal. Arthur Gosset &amp; Hélène Cloître.</div>
+              </div>
 
-             <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2018-2020</div>
-              <h3 class="tl-title">Licence Cinéma</h3>
-              <div class="tl-sub">Théorie & Histoire du cinéma  &amp; · Rennes</div>
-              <div class="tl-desc">Université Rennes 2.</div>
-            </div>
+              <div class="tl-card tl-row-bottom" role="listitem">
+                <div class="tl-card-connector top" aria-hidden="true"></div>
+                <div class="tl-card-dot top" aria-hidden="true"></div>
+                <div class="tl-year">2025</div>
+                <h3 class="tl-title">Le Plus Beau Tableau du Monde</h3>
+                <div class="tl-sub">Monteur image · Court métrage fiction</div>
+                <img class="tl-img" src="assets/images/pbtm4.JPG" alt="Le Plus Beau Tableau du Monde">
+                <div class="tl-desc">Primé au Hallucinea Film Festival. Réal. David Simon.</div>
+              </div>
 
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2016–2018</div>
-              <h3 class="tl-title">BTS Audiovisuel</h3>
-              <div class="tl-sub">Montage &amp; Post-production · Biarritz</div>
-              <div class="tl-desc">Lycée René Cassin, Bayonne-Biarritz.</div>
-            </div>
- 			
- 			<div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2014-2015</div>
-              <h3 class="tl-title">Classes préparatoires A/L Hypokhâgne</h3>
-              <div class="tl-sub">Littérature &amp; Cinema, Philosophie, Histoire, Géographie, Langues classiques et modernes.</div>
-              <div class="tl-desc">Lycée René Cassin, Biarritz.</div>
-            </div>
+              <div class="tl-card tl-row-top" role="listitem">
+                <div class="tl-card-connector bottom" aria-hidden="true"></div>
+                <div class="tl-card-dot bottom" aria-hidden="true"></div>
+                <div class="tl-year">2025</div>
+                <h3 class="tl-title">Ligue 1 Mag — May21 &amp; Black Dynamite</h3>
+                <div class="tl-sub">Assistant post-production · Broadcast</div>
+                <div class="tl-desc">Ingest, conforming, QC, exports PAD broadcast. Diffusion nationale.</div>
+              </div>
 
-            <div class="tl-item">
-              <div class="tl-tick" aria-hidden="true"></div>
-              <div class="tl-year">2017</div>
-              <h3 class="tl-title">Stages professionnels</h3>
-              <div class="tl-sub">Mandarin Cinéma · France 3 Bretagne · SAYA Post</div>
-              <div class="tl-desc">Production (Patients, Cigarettes &amp; Chocolat Chauds) · Montage news · Post-production technique.</div>
-            </div>
+              <div class="tl-card tl-row-bottom" role="listitem">
+                <div class="tl-card-connector top" aria-hidden="true"></div>
+                <div class="tl-card-dot top" aria-hidden="true"></div>
+                <div class="tl-year">2025</div>
+                <h3 class="tl-title">Testeni Albert Taque</h3>
+                <div class="tl-sub">Témoignage documentaire · Réal. &amp; montage</div>
+                <div class="tl-desc">Cinémathèque de Bretagne. Libération de Rosporden, août 1944. Réal. Mathis Veillard &amp; Léo-Pol Sellin.</div>
+              </div>
 
+              <div class="tl-card tl-row-top" role="listitem">
+                <div class="tl-card-connector bottom" aria-hidden="true"></div>
+                <div class="tl-card-dot bottom" aria-hidden="true"></div>
+                <div class="tl-year">2024</div>
+                <h3 class="tl-title">Une dernière nuit de toi</h3>
+                <div class="tl-sub">VFX Artist 2D · Long métrage · Prime Video</div>
+                <img class="tl-img" src="assets/images/derniere-nuit-cover.jpg" alt="Une dernière nuit de toi">
+                <div class="tl-desc">Compositing, rotoscopie, intégrations. Réal. Théodore Tomasz.</div>
+              </div>
+
+              <div class="tl-card tl-row-bottom" role="listitem">
+                <div class="tl-card-connector top" aria-hidden="true"></div>
+                <div class="tl-card-dot top" aria-hidden="true"></div>
+                <div class="tl-year">2024</div>
+                <h3 class="tl-title">Ultimatum 3 — Guérilla</h3>
+                <div class="tl-sub">VFX 2D · Moyen métrage d'action</div>
+                <img class="tl-img" src="assets/images/Ultimatum1.JPG" alt="Ultimatum 3">
+                <div class="tl-desc">Compositing, rotoscopie, intégrations, création d'assets, motion design. Réal. Axel Plantec &amp; David A. Simon.</div>
+              </div>
+
+              <div class="tl-card tl-row-top" role="listitem">
+                <div class="tl-card-connector bottom" aria-hidden="true"></div>
+                <div class="tl-card-dot bottom" aria-hidden="true"></div>
+                <div class="tl-year">2022</div>
+                <h3 class="tl-title">Home Glitch Home — Ecce Films</h3>
+                <div class="tl-sub">VFX Artist 2D · 7 mois · Paris</div>
+                <img class="tl-img" src="assets/images/hgh1.JPG" alt="Home Glitch Home">
+                <div class="tl-desc">Processus expérimental, compositing, IA. Réal. Carlos Franklin.</div>
+              </div>
+
+              <div class="tl-card tl-row-bottom" role="listitem">
+                <div class="tl-card-connector top" aria-hidden="true"></div>
+                <div class="tl-card-dot top" aria-hidden="true"></div>
+                <div class="tl-year">2018–19</div>
+                <h3 class="tl-title">Mallard Productions — Glasgow</h3>
+                <div class="tl-sub">Monteur · 6 mois</div>
+                <div class="tl-desc">Expérience fondatrice en post-production internationale.</div>
+              </div>
+
+            </div><!-- /.tl-scroll -->
+          </div><!-- /.tl-tape-wrapper -->
+          <div class="tl-nav">
+            <button class="tl-nav-btn" data-tl-prev="exp" aria-label="Précédent">←</button>
+            <button class="tl-nav-btn" data-tl-next="exp" aria-label="Suivant">→</button>
           </div>
-        </div>
+          <p class="tl-scroll-hint">← Glisser ou utiliser les flèches →</p>
+        </div><!-- /.tl-block-body -->
+      </div><!-- /.tl-block -->
 
-      </div>
-    </div>
+      <!-- ── BANDE FORMATION ─────────────────────────────────────── -->
+      <div class="tl-block reveal">
+        <button class="tl-block-header" aria-expanded="false" aria-controls="tl-form-body" id="tl-form-trigger">
+          <div class="tl-block-header-left">
+            <span class="tl-block-label">02</span>
+            <span class="tl-block-title">Formation</span>
+            <span class="tl-block-count">5 entrées</span>
+          </div>
+          <span class="tl-block-toggle" aria-hidden="true">▼</span>
+        </button>
+
+        <div class="tl-block-body is-closed" id="tl-form-body" role="region" aria-labelledby="tl-form-trigger">
+          <div class="tl-tape-wrapper">
+            <div class="tl-rail-line" aria-hidden="true"></div>
+            <div class="tl-scroll" data-tl="form" role="list">
+
+              <div class="tl-card tl-row-top" role="listitem">
+                <div class="tl-card-connector bottom" aria-hidden="true"></div>
+                <div class="tl-card-dot bottom" aria-hidden="true"></div>
+                <div class="tl-year">2020–2022</div>
+                <h3 class="tl-title">Master NUMIC</h3>
+                <div class="tl-sub">Université Rennes 2 · Mention Bien</div>
+                <div class="tl-desc">Numérique et Médias Interactifs pour le Cinéma. Projet de Master : 18/20 — 2e meilleure note de l'histoire du programme.</div>
+              </div>
+
+              <div class="tl-card tl-row-bottom" role="listitem">
+                <div class="tl-card-connector top" aria-hidden="true"></div>
+                <div class="tl-card-dot top" aria-hidden="true"></div>
+                <div class="tl-year">2018–2020</div>
+                <h3 class="tl-title">Licence Cinéma</h3>
+                <div class="tl-sub">Théorie &amp; Histoire · Université Rennes 2</div>
+                <div class="tl-desc">Théorie et histoire du cinéma.</div>
+              </div>
+
+              <div class="tl-card tl-row-top" role="listitem">
+                <div class="tl-card-connector bottom" aria-hidden="true"></div>
+                <div class="tl-card-dot bottom" aria-hidden="true"></div>
+                <div class="tl-year">2016–2018</div>
+                <h3 class="tl-title">BTS Audiovisuel</h3>
+                <div class="tl-sub">Montage &amp; Post-production · Biarritz</div>
+                <div class="tl-desc">Lycée René Cassin, Bayonne-Biarritz.</div>
+              </div>
+
+              <div class="tl-card tl-row-bottom" role="listitem">
+                <div class="tl-card-connector top" aria-hidden="true"></div>
+                <div class="tl-card-dot top" aria-hidden="true"></div>
+                <div class="tl-year">2017</div>
+                <h3 class="tl-title">Stages professionnels</h3>
+                <div class="tl-sub">Mandarin Cinéma · France 3 · SAYA Post</div>
+                <div class="tl-desc">Production (Patients, Cigarettes &amp; Chocolat Chauds) · Montage news · Post-production technique.</div>
+              </div>
+
+              <div class="tl-card tl-row-top" role="listitem">
+                <div class="tl-card-connector bottom" aria-hidden="true"></div>
+                <div class="tl-card-dot bottom" aria-hidden="true"></div>
+                <div class="tl-year">2014–2015</div>
+                <h3 class="tl-title">Hypokhâgne A/L</h3>
+                <div class="tl-sub">Littérature · Philosophie · Langues</div>
+                <div class="tl-desc">Lycée René Cassin, Biarritz. Cinéma, philosophie, histoire, géographie, langues classiques et modernes.</div>
+              </div>
+
+            </div><!-- /.tl-scroll -->
+          </div><!-- /.tl-tape-wrapper -->
+          <div class="tl-nav">
+            <button class="tl-nav-btn" data-tl-prev="form" aria-label="Précédent">←</button>
+            <button class="tl-nav-btn" data-tl-next="form" aria-label="Suivant">→</button>
+          </div>
+          <p class="tl-scroll-hint">← Glisser ou utiliser les flèches →</p>
+        </div><!-- /.tl-block-body -->
+      </div><!-- /.tl-block -->
+
+    </div><!-- /.container -->
   </section>
 
 
@@ -2016,6 +2176,61 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 
+    /* ── TIMELINE HORIZONTALE — accordion + drag + flèches ───── */
+    (function() {
+      const STEP = 320;
+
+      // ── Accordion ──────────────────────────────────────────────
+      document.querySelectorAll('.tl-block-header').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          const body = document.getElementById(btn.getAttribute('aria-controls'));
+          const toggle = btn.querySelector('.tl-block-toggle');
+
+          btn.setAttribute('aria-expanded', !expanded);
+          body.classList.toggle('is-closed', expanded);
+          toggle.textContent = expanded ? '▼' : '▲';
+          btn.style.borderBottomColor = expanded ? 'transparent' : '';
+        });
+      });
+
+      // ── Drag + flèches pour chaque bande ───────────────────────
+      document.querySelectorAll('.tl-scroll').forEach(scroll => {
+        const id = scroll.dataset.tl;
+
+        // Flèches
+        const btnPrev = document.querySelector('[data-tl-prev="' + id + '"]');
+        const btnNext = document.querySelector('[data-tl-next="' + id + '"]');
+        if (btnPrev) btnPrev.addEventListener('click', () => scroll.scrollBy({ left: -STEP, behavior: 'smooth' }));
+        if (btnNext) btnNext.addEventListener('click', () => scroll.scrollBy({ left:  STEP, behavior: 'smooth' }));
+
+        // Drag souris
+        let isDragging = false, startX = 0, startScroll = 0;
+        scroll.addEventListener('mousedown', e => {
+          isDragging = true; startX = e.pageX; startScroll = scroll.scrollLeft;
+          scroll.classList.add('is-dragging');
+        });
+        window.addEventListener('mousemove', e => {
+          if (!isDragging) return;
+          e.preventDefault();
+          scroll.scrollLeft = startScroll - (e.pageX - startX);
+        });
+        window.addEventListener('mouseup', () => {
+          isDragging = false; scroll.classList.remove('is-dragging');
+        });
+
+        // Touch
+        let touchStartX = 0, touchStartScroll = 0;
+        scroll.addEventListener('touchstart', e => {
+          touchStartX = e.touches[0].pageX; touchStartScroll = scroll.scrollLeft;
+        }, { passive: true });
+        scroll.addEventListener('touchmove', e => {
+          scroll.scrollLeft = touchStartScroll - (e.touches[0].pageX - touchStartX);
+        }, { passive: true });
+      });
+    })();
+
+
     /* ── TRACKING GA4 (prêt à activer) ────────────────────────
        Quand GA4 est installé, ces clics seront automatiquement
        trackés via les attributs data-track sur les liens.
@@ -2038,4 +2253,6 @@
   </script>
 </body>
 </html>
+
+
 
