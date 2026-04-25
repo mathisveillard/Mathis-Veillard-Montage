@@ -32,23 +32,16 @@
   <meta name="twitter:title" content="Mathis Veillard — Monteur image & VFX Artist 2D">
   <meta name="twitter:description" content="Portfolio de Mathis Veillard. Montage, post-production et VFX 2D pour le cinéma, le documentaire et le broadcast.">
 
-<!--============================================================
-       GOOGLE ANALYTICS 4 — intégration future
-       Coller ici le script GA4 fourni par Google Analytics.
-       Exemple :
-      <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-M02V40SF1B"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-M02V40SF1B');
-</script>
-       <!--Remplacer G-XXXXXXXXXX par l'ID de mesure de votre propriété GA4.
-       Les clics trackables (projets, showreel, CV, LinkedIn) sont déjà
-       préparés dans le JS en bas de page avec des attributs data-track.
-  ============================================================-->
+<!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-M02V40SF1B"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-M02V40SF1B', {
+      'anonymize_ip': true
+    });
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2338,7 +2331,6 @@
        Coller le script GA4 dans le <head> (voir commentaire là-haut)
        puis décommenter le bloc ci-dessous.
     ─────────────────────────────────────────────────────────── */
-    /*
     document.querySelectorAll('[data-track]').forEach(el => {
       el.addEventListener('click', () => {
         if (typeof gtag === 'function') {
@@ -2349,11 +2341,14 @@
         }
       });
     });
-    */
 
   </script>
 </body>
 </html>
+
+
+
+
 
 
 
