@@ -2585,70 +2585,59 @@
     })();
 
 
-    /* ── COOKIE BANNER ───────────────────────────────────────── */
-    (function() {
-      const banner  = document.getElementById('consent-bar');
-      const accept  = document.getElementById('consent-ok');
-      const refuse  = document.getElementById('consent-no');
-      if (!banner) return;
+     /* ── CONSENT BANNER ──────────────────────────────────────── */
+     (function() {
+       const banner = document.getElementById('consent-bar');
+       const btnOk  = document.getElementById('consent-ok');
+       const btnNo  = document.getElementById('consent-no');
+       if (!banner || !btnOk || !btnNo) return;
 
-      const consent = localStorage.getItem('cookie-consent');
+       function hide() {
+         banner.style.opacity = '0';
+         setTimeout(() => { banner.style.display = 'none'; }, 400);
+       }
 
-      function hideBanner() {
-        banner.classList.remove('consent-active');
-        setTimeout(() => { banner.style.display = 'none'; }, 400);
-      }
+       const saved = localStorage.getItem('mv-consent');
+       if (saved) {
+         banner.style.display = 'none';
+         if (saved === 'yes' && typeof gtag === 'function') {
+           gtag('consent', 'update', { analytics_storage: 'granted' });
+         }
+         return;
+       }
 
-      function enableGA() {
-        if (typeof gtag === 'function') {
-          gtag('consent', 'update', { 'analytics_storage': 'granted' });
-        }
-      }
+       const rect = document.getElementById('consent-frame-rect');
+       if (rect) {
+         const w = banner.offsetWidth || 600;
+         const h = banner.offsetHeight || 100;
+         const p = 2 * (w + h);
+         rect.setAttribute('width',  w - 1);
+         rect.setAttribute('height', h - 1);
+         rect.style.strokeDasharray  = p;
+         rect.style.strokeDashoffset = p;
+         requestAnimationFrame(() => requestAnimationFrame(() => {
+           rect.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)';
+           rect.style.strokeDashoffset = '0';
+         }));
+       }
 
-      function disableGA() {
-        if (typeof gtag === 'function') {
-          gtag('consent', 'update', { 'analytics_storage': 'denied' });
-        }
-      }
+       btnOk.addEventListener('click', () => {
+         localStorage.setItem('mv-consent', 'yes');
+         if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+         hide();
+       });
 
-      if (consent === 'accepted') {
-        enableGA(); banner.style.display = 'none';
-      } else if (consent === 'refused') {
-        disableGA(); banner.style.display = 'none';
-      } else {
-        disableGA();
-        setTimeout(() => {
-          // Set SVG rect dimensions to match banner
-          const rect = document.getElementById('consent-rect');
-          if (rect) {
-            const w = banner.offsetWidth;
-            const h = banner.offsetHeight;
-            rect.setAttribute('width', w - 1);
-            rect.setAttribute('height', h - 1);
-            // Set stroke-dasharray to perimeter
-            const perimeter = 2 * (w + h);
-            rect.style.strokeDasharray = perimeter;
-            rect.style.strokeDashoffset = perimeter;
-          }
-          banner.classList.add('consent-active');
-          banner.style.cssText += ';opacity:1!important;pointer-events:all!important';
-        }, 1200);
-      }
+       btnNo.addEventListener('click', () => {
+         localStorage.setItem('mv-consent', 'no');
+         hide();
+       });
+     })();
 
-      accept.addEventListener('click', () => {
-        localStorage.setItem('cookie-consent', 'accepted');
-        enableGA(); hideBanner();
-      });
-      refuse.addEventListener('click', () => {
-        localStorage.setItem('cookie-consent', 'refused');
-        disableGA(); hideBanner();
-      });
-    })();
 
   </script>
 
   <!-- ── COOKIE BANNER ─────────────────────────────────────── -->
-  <div class="consent-bar" id="consent-bar" role="dialog" aria-label="Gestion des cookies">
+  <div class="consent-bar consent-active" id="consent-bar" role="dialog" aria-label="Gestion des cookies" style="opacity:1!important;pointer-events:all!important;visibility:visible!important;">
     <svg class="consent-frame" id="consent-svg" aria-hidden="true">
       <rect id="consent-rect" x="0.5" y="0.5" rx="0"/>
     </svg>
@@ -2663,5 +2652,4 @@
   </div>
 </body>
 </html>
-
 
