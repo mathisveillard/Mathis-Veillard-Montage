@@ -938,36 +938,33 @@
     /* ── WORD SHUFFLE REVEAL — manifeste ────────────────────── */
     .word-shuffle-wrap {
       position: relative;
+      /* Reserve space so layout doesn't collapse */
     }
 
-    /* Conteneur relatif pour chaque paragraphe */
-    .wsr-para {
-      position: relative;
-      min-height: 1.9em;
-    }
-
-    /* Chaque mot — état flou initial */
-    .wsr-word {
+    /* Invisible placeholder — keeps the layout intact */
+    .wsr-placeholder {
       display: inline-block;
-      filter: blur(6px);
+      visibility: hidden;
+      white-space: pre;
+    }
+
+    /* Floating word — absolute, animated */
+    .wsr-word {
+      position: absolute;
+      display: inline-block;
       opacity: 0;
-      transition: none;
+      filter: blur(8px);
       will-change: filter, opacity, transform;
+      pointer-events: none;
+      white-space: nowrap;
     }
 
-    /* Mot visible et net */
-    .wsr-word.wsr-visible {
-      filter: blur(0);
-      opacity: 1;
-      transition: filter .9s cubic-bezier(.25,.46,.45,.94),
-                  opacity .6s ease;
-    }
-
-    /* Phase 2 : replacement en douceur */
-    .wsr-word.wsr-placed {
-      transition: filter .9s cubic-bezier(.25,.46,.45,.94),
-                  opacity .6s ease,
-                  transform .8s cubic-bezier(.25,.46,.45,.94);
+    /* Once placed — transitions to final position */
+    .wsr-word.wsr-animating {
+      transition:
+        transform 1.8s cubic-bezier(.25,.46,.45,.94),
+        filter 1.4s cubic-bezier(.25,.46,.45,.94),
+        opacity 0.6s ease;
     }
 
 
@@ -2017,7 +2014,7 @@
 
         <!-- Texte -->
         <div class="reveal reveal-d2">
-          <div class="apropos-body">
+          <div class="apropos-body word-shuffle-wrap" data-word-shuffle>
             <p>Je suis Mathis Veillard, monteur image et VFX artist 2D basé à Paris. Breton qui ne perd jamais une occasion de le rappeler !</p>
             <p>D'aussi vieux que je me souvienne, j'ai toujours tenu une caméra pour faire des films ... et un ordinateur pour les monter. Dès 8 ans je montais avec ma soeur Télé Ringard, premier projet aussi idiot que jouissif. J'ai continué à produire des films et des vidéos, en mettant de plus en plus l'accent sur la qualité et la créativité.</p>
             <p>J’ai travaillé sur des documentaires, de la fiction et de l'éditorial en tant que monteur et assistant de post-production. En passant par de l'institutionnel à Glasgow, un documentaire récompensé en festival et diffusé par TV5 Monde+, ou encore un film en réalité virtuelle.</p>
@@ -2393,60 +2390,105 @@
       const blocks = document.querySelectorAll('[data-word-shuffle]');
       if (!blocks.length) return;
 
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
       blocks.forEach(block => {
         const paras = block.querySelectorAll('p');
-        // Collect all words across all paragraphs
         let allWords = [];
 
-        paras.forEach((p, pi) => {
-          const text = p.innerHTML;
-          // Split on spaces, preserve HTML
-          const parts = text.split(/(\s+)/);
-          p.innerHTML = '';
-          parts.forEach(part => {
-            if (part.match(/^\s+$/)) {
-              p.appendChild(document.createTextNode(part));
-            } else if (part.length > 0) {
-              const span = document.createElement('span');
-              span.className = 'wsr-word';
-              span.innerHTML = part;
-              p.appendChild(span);
-              allWords.push(span);
-            }
+        // Step 1 — wrap each word in a placeholder + floating clone
+        paras.forEach(p => {
+          const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT, null);
+          const textNodes = [];
+          let node;
+          while (node = walker.nextNode()) textNodes.push(node);
+
+          textNodes.forEach(tn => {
+            const parts = tn.textContent.split(/(\s+)/);
+            const frag = document.createDocumentFragment();
+            parts.forEach(w => {
+              if (/^\s+$/.test(w) || w === '') {
+                frag.appendChild(document.createTextNode(w));
+              } else {
+                // Invisible placeholder to keep layout
+                const ph = document.createElement('span');
+                ph.className = 'wsr-placeholder';
+                ph.textContent = w;
+                frag.appendChild(ph);
+                allWords.push({ placeholder: ph, text: w });
+              }
+            });
+            tn.parentNode.replaceChild(frag, tn);
           });
         });
-
-        // Shuffle the words array for random appearance order
-        function shuffle(arr) {
-          for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-          }
-          return arr;
-        }
 
         const obs = new IntersectionObserver(entries => {
           entries.forEach(entry => {
             if (!entry.isIntersecting) return;
             obs.unobserve(block);
 
-            const shuffled = shuffle([...allWords]);
-            const totalDuration = 4200; // ms for all words to appear
+            // Step 2 — measure final positions of all placeholders
+            const blockRect = block.getBoundingClientRect();
+            const blockW = block.offsetWidth;
+            const blockH = block.offsetHeight;
+
+            // Create floating word elements
+            const floaters = allWords.map(({ placeholder, text }) => {
+              const phRect = placeholder.getBoundingClientRect();
+              const finalX = phRect.left - blockRect.left;
+              const finalY = phRect.top - blockRect.top;
+
+              // Random start position within the block
+              const startX = Math.random() * (blockW * 0.85);
+              const startY = Math.random() * (blockH * 0.85);
+
+              const floater = document.createElement('span');
+              floater.className = 'wsr-word';
+              floater.textContent = text;
+              floater.style.left = '0';
+              floater.style.top = '0';
+              floater.style.transform = `translate(${startX}px, ${startY}px)`;
+              block.appendChild(floater);
+
+              return { floater, finalX, finalY, startX, startY };
+            });
+
+            // Step 3 — animate in shuffled order
+            const shuffled = shuffle([...floaters.map((f, i) => ({ ...f, idx: i }))]);
+            const totalDuration = 7000;
             const interval = totalDuration / shuffled.length;
 
-            // Phase 1 — words appear blurry, random order, staggered
-            shuffled.forEach((word, i) => {
+            shuffled.forEach(({ floater, finalX, finalY, idx }, i) => {
               setTimeout(() => {
-                word.classList.add('wsr-visible');
+                // Appear blurry at random position
+                floater.style.opacity = '1';
+
+                // After brief moment, animate to final position and sharpen
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    floater.classList.add('wsr-animating');
+                    floater.style.transform = `translate(${finalX}px, ${finalY}px)`;
+                    floater.style.filter = 'blur(0)';
+
+                    // Once settled, show placeholder and remove floater
+                    setTimeout(() => {
+                      allWords[idx].placeholder.style.visibility = 'visible';
+                      floater.style.opacity = '0';
+                      setTimeout(() => floater.remove(), 300);
+                    }, 1900);
+                  });
+                });
               }, i * interval);
             });
 
-            // Phase 2 — after all words visible, brief pause then sharpen fully
-            // (blur transition handles the "coming into focus" naturally)
-            // No repositioning needed — words are already in place in the DOM
-            // The blur-to-sharp IS the "organising" moment
           });
-        }, { threshold: 0.2 });
+        }, { threshold: 0.15 });
 
         obs.observe(block);
       });
