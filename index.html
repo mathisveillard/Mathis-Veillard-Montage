@@ -1067,6 +1067,82 @@
       .tc-strip .tc-num:nth-child(3),
       .tc-strip .tc-num:nth-child(4) { display: none; }
     }
+  
+    /* ── COOKIE BANNER ───────────────────────────────────────── */
+    .cookie-banner {
+      position: fixed; bottom: 2rem; left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      background: var(--charbon2);
+      padding: 1.4rem 1.8rem;
+      display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+      max-width: 720px; width: calc(100% - 3rem);
+      opacity: 0; pointer-events: none;
+      transition: opacity .4s ease;
+      /* Border drawn by SVG overlay */
+      position: fixed;
+    }
+    .cookie-banner.cookie-visible {
+      opacity: 1; pointer-events: all;
+    }
+
+    /* Animated border — SVG frame */
+    .cookie-border {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      overflow: visible; pointer-events: none;
+    }
+    .cookie-border rect {
+      fill: none;
+      stroke: var(--bleu-acier);
+      stroke-width: 1;
+      stroke-dasharray: 2000;
+      stroke-dashoffset: 2000;
+      transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1);
+    }
+    .cookie-banner.cookie-visible .cookie-border rect {
+      stroke-dashoffset: 0;
+    }
+
+    .cookie-text {
+      flex: 1; min-width: 200px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: .78rem; font-weight: 300;
+      color: var(--gris-clair); line-height: 1.6;
+    }
+    .cookie-text strong {
+      font-family: 'Syne Mono', monospace;
+      font-size: .6rem; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--blanc-froid);
+      display: block; margin-bottom: .4rem;
+    }
+    .cookie-btns {
+      display: flex; gap: .6rem; flex-shrink: 0;
+    }
+    .cookie-accept {
+      font-family: 'Syne Mono', monospace; font-size: .6rem;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .55rem 1.2rem;
+      background: var(--bleu-acier); color: var(--charbon);
+      border: none; cursor: pointer;
+      transition: background .2s;
+    }
+    .cookie-accept:hover { background: var(--bleu-froid); }
+    .cookie-refuse {
+      font-family: 'Syne Mono', monospace; font-size: .6rem;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .55rem 1.2rem;
+      background: transparent; color: var(--gris-clair);
+      border: 1px solid var(--ligne); cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .cookie-refuse:hover { border-color: var(--bleu-acier); color: var(--bleu-froid); }
+
+    @media (max-width: 600px) {
+      .cookie-banner { flex-direction: column; align-items: flex-start; gap: 1rem; bottom: 1rem; }
+      .cookie-btns { width: 100%; }
+      .cookie-accept, .cookie-refuse { flex: 1; text-align: center; }
+    }
   </style>
 </head>
 <body>
@@ -1362,7 +1438,7 @@
           <div class="work-hero-meta">
             TV5Monde+ <span>·</span> <span>Monteur image</span> <span>·</span> <span>Séisme Productions</span>
           </div>
-          <p class="work-hero-desc">Montage et motion design du long métrage documentaire réalisé par Arthur Gosset &amp; Hélène Cloître. Décliné en mini-série pour TV5Monde+.</p>
+          <p class="work-hero-desc">Montage complet et motion design du long métrage documentaire réalisé par Arthur Gosset &amp; Hélène Cloître. Décliné en mini-série pour TV5Monde+.</p>
           <div class="work-hero-tools">
             <span class="work-tool">DaVinci Resolve</span>
             <span class="work-tool">After Effects</span>
@@ -1371,8 +1447,7 @@
           </div>
         </div>
         <div class="work-hero-cta">
-          <div class="work-hero-award">Prix du jury<br>Festival du Film Vert<br>de Genève · 2026</div>
-          <div class="work-hero-award">Sélection<br>Festival Atmoshphère<br>Courbevoie, Paris La Défense · 2025</div>
+          <div class="work-hero-award">Prix du jury<br>Festival du Film Vert<br>de Genève · 2025</div>
           <!--
             LIEN DU PROJET — remplacer par l'URL réelle si différente
           -->
@@ -2429,6 +2504,22 @@
           });
         });
 
+        // Disable on mobile — absolute positioning breaks on narrow viewports
+        if (window.innerWidth < 768) {
+          allWords.forEach(({ placeholder }) => {
+            placeholder.style.visibility = 'visible';
+          });
+          return;
+        }
+
+        // Disable on mobile — absolute positioning breaks on narrow viewports
+        if (window.innerWidth < 768) {
+          allWords.forEach(({ placeholder }) => {
+            placeholder.style.visibility = 'visible';
+          });
+          return;
+        }
+
         const obs = new IntersectionObserver(entries => {
           entries.forEach(entry => {
             if (!entry.isIntersecting) return;
@@ -2495,10 +2586,70 @@
       });
     })();
 
+
+    /* ── COOKIE BANNER ───────────────────────────────────────── */
+    (function() {
+      const banner  = document.getElementById('cookie-banner');
+      const accept  = document.getElementById('cookie-accept');
+      const refuse  = document.getElementById('cookie-refuse');
+      if (!banner) return;
+
+      const consent = localStorage.getItem('cookie-consent');
+
+      function hideBanner() {
+        banner.classList.remove('cookie-visible');
+        setTimeout(() => { banner.style.display = 'none'; }, 400);
+      }
+
+      function enableGA() {
+        if (typeof gtag === 'function') {
+          gtag('consent', 'update', { 'analytics_storage': 'granted' });
+        }
+      }
+
+      function disableGA() {
+        if (typeof gtag === 'function') {
+          gtag('consent', 'update', { 'analytics_storage': 'denied' });
+        }
+      }
+
+      if (consent === 'accepted') {
+        enableGA(); banner.style.display = 'none';
+      } else if (consent === 'refused') {
+        disableGA(); banner.style.display = 'none';
+      } else {
+        disableGA();
+        setTimeout(() => { banner.classList.add('cookie-visible'); }, 1200);
+      }
+
+      accept.addEventListener('click', () => {
+        localStorage.setItem('cookie-consent', 'accepted');
+        enableGA(); hideBanner();
+      });
+      refuse.addEventListener('click', () => {
+        localStorage.setItem('cookie-consent', 'refused');
+        disableGA(); hideBanner();
+      });
+    })();
+
   </script>
+
+  <!-- ── COOKIE BANNER ─────────────────────────────────────── -->
+  <div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Gestion des cookies">
+    <svg class="cookie-border" aria-hidden="true">
+      <rect x="0.5" y="0.5" width="calc(100% - 1px)" height="calc(100% - 1px)" rx="0"/>
+    </svg>
+    <div class="cookie-text">
+      <strong>Cookies &amp; mesure d'audience</strong>
+      Ce site utilise Google Analytics pour mesurer son audience de façon anonyme. Aucune donnée personnelle n'est transmise à des tiers.
+    </div>
+    <div class="cookie-btns">
+      <button class="cookie-refuse" id="cookie-refuse">Refuser</button>
+      <button class="cookie-accept" id="cookie-accept">Accepter</button>
+    </div>
+  </div>
 </body>
 </html>
-
 
 
 
