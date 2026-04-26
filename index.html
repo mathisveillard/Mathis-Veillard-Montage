@@ -1070,19 +1070,19 @@
   
     /* ── COOKIE BANNER ───────────────────────────────────────── */
     .consent-bar {
-      position: fixed; bottom: 2rem; left: 50%;
-      transform: translateX(-50%);
-      z-index: 500;
-      background: var(--charbon2);
-      padding: 1.4rem 1.8rem;
-      display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+      position: fixed !important; bottom: 2rem !important; left: 50% !important;
+      transform: translateX(-50%) !important;
+      z-index: 2147483647 !important;
+      background: var(--charbon2) !important;
+      padding: 1.4rem 1.8rem !important;
+      display: flex !important; align-items: center; gap: 2rem; flex-wrap: wrap;
       max-width: 720px; width: calc(100% - 3rem);
       opacity: 0; pointer-events: none;
       transition: opacity .4s ease;
-      outline: 1px solid transparent;
+      visibility: visible !important;
     }
     .consent-bar.consent-active {
-      opacity: 1; pointer-events: all;
+      opacity: 1 !important; pointer-events: all !important;
     }
 
     /* Animated border — SVG frame */
@@ -2631,6 +2631,7 @@
             rect.style.strokeDashoffset = perimeter;
           }
           banner.classList.add('consent-active');
+          banner.style.cssText += ';opacity:1!important;pointer-events:all!important';
         }, 1200);
       }
 
@@ -2662,9 +2663,5 @@
   </div>
 </body>
 </html>
-
-
-
-
 
 
