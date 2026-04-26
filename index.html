@@ -2461,7 +2461,7 @@
 
             // Step 3 — animate in shuffled order
             const shuffled = shuffle([...floaters.map((f, i) => ({ ...f, idx: i }))]);
-            const totalDuration = 7000;
+            const totalDuration = 5000;
             const interval = totalDuration / shuffled.length;
 
             shuffled.forEach(({ floater, finalX, finalY, idx }, i) => {
