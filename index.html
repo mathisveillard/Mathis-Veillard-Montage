@@ -1069,7 +1069,7 @@
     }
   
     /* ── COOKIE BANNER ───────────────────────────────────────── */
-    .cookie-banner {
+    .consent-bar {
       position: fixed; bottom: 2rem; left: 50%;
       transform: translateX(-50%);
       z-index: 500;
@@ -1081,43 +1081,43 @@
       transition: opacity .4s ease;
       outline: 1px solid transparent;
     }
-    .cookie-banner.cookie-visible {
+    .consent-bar.consent-active {
       opacity: 1; pointer-events: all;
     }
 
     /* Animated border — SVG frame */
-    .cookie-border {
+    .consent-frame {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
       overflow: visible; pointer-events: none;
     }
-    .cookie-border rect {
+    .consent-frame rect {
       fill: none;
       stroke: var(--bleu-acier);
       stroke-width: 1;
       stroke-dashoffset: 9999;
       transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1);
     }
-    .cookie-banner.cookie-visible .cookie-border rect {
+    .consent-bar.consent-active .consent-frame rect {
       stroke-dashoffset: 0;
     }
 
-    .cookie-text {
+    .consent-info {
       flex: 1; min-width: 200px;
       font-family: 'Space Grotesk', sans-serif;
       font-size: .78rem; font-weight: 300;
       color: var(--gris-clair); line-height: 1.6;
     }
-    .cookie-text strong {
+    .consent-info strong {
       font-family: 'Syne Mono', monospace;
       font-size: .6rem; letter-spacing: .1em;
       text-transform: uppercase; color: var(--blanc-froid);
       display: block; margin-bottom: .4rem;
     }
-    .cookie-btns {
+    .consent-actions {
       display: flex; gap: .6rem; flex-shrink: 0;
     }
-    .cookie-accept {
+    .consent-ok {
       font-family: 'Syne Mono', monospace; font-size: .6rem;
       letter-spacing: .1em; text-transform: uppercase;
       padding: .55rem 1.2rem;
@@ -1125,8 +1125,8 @@
       border: none; cursor: pointer;
       transition: background .2s;
     }
-    .cookie-accept:hover { background: var(--bleu-froid); }
-    .cookie-refuse {
+    .consent-ok:hover { background: var(--bleu-froid); }
+    .consent-no {
       font-family: 'Syne Mono', monospace; font-size: .6rem;
       letter-spacing: .1em; text-transform: uppercase;
       padding: .55rem 1.2rem;
@@ -1134,12 +1134,12 @@
       border: 1px solid var(--ligne); cursor: pointer;
       transition: border-color .2s, color .2s;
     }
-    .cookie-refuse:hover { border-color: var(--bleu-acier); color: var(--bleu-froid); }
+    .consent-no:hover { border-color: var(--bleu-acier); color: var(--bleu-froid); }
 
     @media (max-width: 600px) {
-      .cookie-banner { flex-direction: column; align-items: flex-start; gap: 1rem; bottom: 1rem; }
-      .cookie-btns { width: 100%; }
-      .cookie-accept, .cookie-refuse { flex: 1; text-align: center; }
+      .consent-bar { flex-direction: column; align-items: flex-start; gap: 1rem; bottom: 1rem; }
+      .consent-actions { width: 100%; }
+      .consent-ok, .consent-no { flex: 1; text-align: center; }
     }
   </style>
 </head>
@@ -2587,15 +2587,15 @@
 
     /* ── COOKIE BANNER ───────────────────────────────────────── */
     (function() {
-      const banner  = document.getElementById('cookie-banner');
-      const accept  = document.getElementById('cookie-accept');
-      const refuse  = document.getElementById('cookie-refuse');
+      const banner  = document.getElementById('consent-bar');
+      const accept  = document.getElementById('consent-ok');
+      const refuse  = document.getElementById('consent-no');
       if (!banner) return;
 
       const consent = localStorage.getItem('cookie-consent');
 
       function hideBanner() {
-        banner.classList.remove('cookie-visible');
+        banner.classList.remove('consent-active');
         setTimeout(() => { banner.style.display = 'none'; }, 400);
       }
 
@@ -2619,7 +2619,7 @@
         disableGA();
         setTimeout(() => {
           // Set SVG rect dimensions to match banner
-          const rect = document.getElementById('cookie-rect');
+          const rect = document.getElementById('consent-rect');
           if (rect) {
             const w = banner.offsetWidth;
             const h = banner.offsetHeight;
@@ -2630,7 +2630,7 @@
             rect.style.strokeDasharray = perimeter;
             rect.style.strokeDashoffset = perimeter;
           }
-          banner.classList.add('cookie-visible');
+          banner.classList.add('consent-active');
         }, 1200);
       }
 
@@ -2647,17 +2647,17 @@
   </script>
 
   <!-- ── COOKIE BANNER ─────────────────────────────────────── -->
-  <div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Gestion des cookies">
-    <svg class="cookie-border" id="cookie-svg" aria-hidden="true">
-      <rect id="cookie-rect" x="0.5" y="0.5" rx="0"/>
+  <div class="consent-bar" id="consent-bar" role="dialog" aria-label="Gestion des cookies">
+    <svg class="consent-frame" id="consent-svg" aria-hidden="true">
+      <rect id="consent-rect" x="0.5" y="0.5" rx="0"/>
     </svg>
-    <div class="cookie-text">
+    <div class="consent-info">
       <strong>Cookies &amp; mesure d'audience</strong>
       Ce site utilise Google Analytics pour mesurer son audience de façon anonyme. Aucune donnée personnelle n'est transmise à des tiers.
     </div>
-    <div class="cookie-btns">
-      <button class="cookie-refuse" id="cookie-refuse">Refuser</button>
-      <button class="cookie-accept" id="cookie-accept">Accepter</button>
+    <div class="consent-actions">
+      <button class="consent-no" id="consent-no">Refuser</button>
+      <button class="consent-ok" id="consent-ok">Accepter</button>
     </div>
   </div>
 </body>
