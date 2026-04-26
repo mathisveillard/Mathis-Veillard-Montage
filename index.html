@@ -1079,8 +1079,7 @@
       max-width: 720px; width: calc(100% - 3rem);
       opacity: 0; pointer-events: none;
       transition: opacity .4s ease;
-      /* Border drawn by SVG overlay */
-      position: fixed;
+      outline: 1px solid transparent;
     }
     .cookie-banner.cookie-visible {
       opacity: 1; pointer-events: all;
@@ -1096,8 +1095,7 @@
       fill: none;
       stroke: var(--bleu-acier);
       stroke-width: 1;
-      stroke-dasharray: 2000;
-      stroke-dashoffset: 2000;
+      stroke-dashoffset: 9999;
       transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1);
     }
     .cookie-banner.cookie-visible .cookie-border rect {
@@ -2619,7 +2617,21 @@
         disableGA(); banner.style.display = 'none';
       } else {
         disableGA();
-        setTimeout(() => { banner.classList.add('cookie-visible'); }, 1200);
+        setTimeout(() => {
+          // Set SVG rect dimensions to match banner
+          const rect = document.getElementById('cookie-rect');
+          if (rect) {
+            const w = banner.offsetWidth;
+            const h = banner.offsetHeight;
+            rect.setAttribute('width', w - 1);
+            rect.setAttribute('height', h - 1);
+            // Set stroke-dasharray to perimeter
+            const perimeter = 2 * (w + h);
+            rect.style.strokeDasharray = perimeter;
+            rect.style.strokeDashoffset = perimeter;
+          }
+          banner.classList.add('cookie-visible');
+        }, 1200);
       }
 
       accept.addEventListener('click', () => {
@@ -2636,8 +2648,8 @@
 
   <!-- ── COOKIE BANNER ─────────────────────────────────────── -->
   <div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Gestion des cookies">
-    <svg class="cookie-border" aria-hidden="true">
-      <rect x="0.5" y="0.5" width="calc(100% - 1px)" height="calc(100% - 1px)" rx="0"/>
+    <svg class="cookie-border" id="cookie-svg" aria-hidden="true">
+      <rect id="cookie-rect" x="0.5" y="0.5" rx="0"/>
     </svg>
     <div class="cookie-text">
       <strong>Cookies &amp; mesure d'audience</strong>
