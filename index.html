@@ -1075,16 +1075,16 @@
       z-index: 2147483647 !important;
       background: var(--charbon2) !important;
       padding: 1.4rem 1.8rem !important;
-      display: flex !important; align-items: center; gap: 2rem; flex-wrap: wrap;
+      display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
       max-width: 720px; width: calc(100% - 3rem);
-      opacity: 0; pointer-events: none;
-      transition: opacity .4s ease;
-      visibility: visible !important;
+      transition: opacity .4s ease, visibility .4s ease;
     }
     .consent-bar.consent-active {
-      opacity: 1 !important; pointer-events: all !important;
+      opacity: 1 !important; pointer-events: all !important; visibility: visible !important;
     }
-
+    .consent-bar.consent-hidden {
+      opacity: 0 !important; pointer-events: none !important; visibility: hidden !important;
+    }
     /* Animated border — SVG frame */
     .consent-frame {
       position: absolute; inset: 0;
@@ -2593,13 +2593,14 @@
        if (!banner || !btnOk || !btnNo) return;
 
        function hide() {
-         banner.style.opacity = '0';
-         setTimeout(() => { banner.style.display = 'none'; }, 400);
+         banner.classList.add('consent-hidden');
+         banner.classList.remove('consent-active');
        }
 
        const saved = localStorage.getItem('mv-consent');
        if (saved) {
-         banner.style.display = 'none';
+         banner.classList.add('consent-hidden');
+         banner.classList.remove('consent-active');
          if (saved === 'yes' && typeof gtag === 'function') {
            gtag('consent', 'update', { analytics_storage: 'granted' });
          }
@@ -2652,4 +2653,3 @@
   </div>
 </body>
 </html>
-
