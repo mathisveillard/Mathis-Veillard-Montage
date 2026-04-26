@@ -2593,14 +2593,12 @@
        if (!banner || !btnOk || !btnNo) return;
 
        function hide() {
-         banner.classList.add('consent-hidden');
-         banner.classList.remove('consent-active');
+         banner.parentNode.removeChild(banner);
        }
 
        const saved = localStorage.getItem('mv-consent');
        if (saved) {
-         banner.classList.add('consent-hidden');
-         banner.classList.remove('consent-active');
+         banner.parentNode && banner.parentNode.removeChild(banner);
          if (saved === 'yes' && typeof gtag === 'function') {
            gtag('consent', 'update', { analytics_storage: 'granted' });
          }
