@@ -2586,10 +2586,10 @@
 
 
      /* ── CONSENT BANNER ──────────────────────────────────────── */
-     (function() {
-       const banner = document.getElementById('consent-bar');
-       const btnOk  = document.getElementById('consent-ok');
-       const btnNo  = document.getElementById('consent-no');
+     document.addEventListener("DOMContentLoaded", function() {
+       const banner = document.getElementById("consent-bar");
+       const btnOk  = document.getElementById("consent-ok");
+       const btnNo  = document.getElementById("consent-no");
        if (!banner || !btnOk || !btnNo) return;
 
        function hide() {
@@ -2630,7 +2630,7 @@
          localStorage.setItem('mv-consent', 'no');
          hide();
        });
-     })();
+     });
 
 
   </script>
